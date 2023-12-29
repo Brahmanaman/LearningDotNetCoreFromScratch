@@ -13,6 +13,6 @@ namespace LearningDotNetCoreFromScratch.Models
         public DateTime Enrolled { get; set; }
 
         //Navigation Property
-        public ICollection<StudentCourse> Enrollment { get; set; } = new List<StudentCourse>();
+        public ICollection<StudentCourse> StudentCourse { get; set; } = new List<StudentCourse>();
     }
 }

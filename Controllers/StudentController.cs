@@ -8,9 +8,11 @@ using Microsoft.EntityFrameworkCore;
 using LearningDotNetCoreFromScratch.Data;
 using LearningDotNetCoreFromScratch.Models;
 using LearningDotNetCoreFromScratch.ViewModel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace LearningDotNetCoreFromScratch.Controllers
 {
+    [Authorize(Roles="Student")]
     public class StudentController : Controller
     {
         private readonly DataContext _context;
@@ -34,7 +36,7 @@ namespace LearningDotNetCoreFromScratch.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Students
+            var student = await _context.Students.Include(x => x.StudentCourse).ThenInclude(y => y.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (student == null)
             {
@@ -72,16 +74,18 @@ namespace LearningDotNetCoreFromScratch.Controllers
                 Name = model.Name,
                 Enrolled = model.Enrolled
             };
+
             //selected course
             var selectedCourse = model.Courses.Where(x => x.Selected).Select(y => y.Value).ToList();
 
             foreach(var item in selectedCourse)
             {
-                student.Enrollment.Add(new StudentCourse()
+                student.StudentCourse.Add(new StudentCourse()
                 {
                     CourseId = int.Parse(item),
                 });
             }
+
             _context.Students.Add(student);
             _context.SaveChanges();
 
@@ -97,12 +101,27 @@ namespace LearningDotNetCoreFromScratch.Controllers
                 return NotFound();
             }
 
-            var student = await _context.Students.FindAsync(id);
+            var student = await _context.Students.Include(x => x.StudentCourse).Where(y => y.Id == id).FirstOrDefaultAsync();
             if (student == null)
             {
                 return NotFound();
             }
-            return View(student);
+            var selectedIds = student.StudentCourse.Select(x => x.CourseId).ToList();
+            var items = _context.Courses.Select(x => new SelectListItem()
+            {
+                Text = x.Title,
+                Value = x.Id.ToString(),
+                Selected = selectedIds.Contains(x.Id),
+            }).ToList();
+
+            CreateStudentViewModel model = new CreateStudentViewModel()
+            {
+                Name = student.Name,
+                Enrolled = student.Enrolled,
+                Courses = items,
+            };
+            
+            return View(model);
         }
 
         // POST: Student/Edit/5
@@ -110,34 +129,37 @@ namespace LearningDotNetCoreFromScratch.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Enrolled")] Student student)
+        public IActionResult Edit(CreateStudentViewModel model)
         {
-            if (id != student.Id)
+            var student = _context.Students.Find(model.Id);
+            student.Name = model.Name;
+            student.Enrolled = model.Enrolled;
+
+            var studentByID = _context.Students.Include(x => x.StudentCourse).FirstOrDefault(y => y.Id == model.Id);
+
+            var existingIds = studentByID.StudentCourse.Select(x => x.Id).ToList();
+
+            var selectedIds = model.Courses.Where(x => x.Selected).Select(y => y.Value).Select(int.Parse).ToList();
+
+            var toAdd = selectedIds.Except(existingIds);
+            var toRemove = existingIds.Except(selectedIds);
+
+            student.StudentCourse = student.StudentCourse.Where(x => !toRemove.Contains(x.CourseId)).ToList();
+
+
+            foreach(var item in toAdd)
             {
-                return NotFound();
+                student.StudentCourse.Add(new StudentCourse()
+                {
+                    CourseId = item
+                });
             }
 
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(student);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!StudentExists(student.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(student);
+            _context.Students.Update(student);
+            _context.SaveChanges();
+            return RedirectToAction(nameof(Index));
+
+            
         }
 
         // GET: Student/Delete/5
