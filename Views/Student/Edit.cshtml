@@ -1,4 +1,4 @@
-﻿@model LearningDotNetCoreFromScratch.Models.Student
+﻿@model LearningDotNetCoreFromScratch.ViewModel.CreateStudentViewModel
 
 @{
     ViewData["Title"] = "Edit";
@@ -23,6 +23,14 @@
                 <input asp-for="Enrolled" class="form-control" />
                 <span asp-validation-for="Enrolled" class="text-danger"></span>
             </div>
+            <div class="form-group">
+                @for (int i = 0; i < Model.Courses.Count; i++)
+                {
+                    <input asp-for="Courses[i].Value" type="hidden" />
+                    <input asp-for="Courses[i].Selected" />@Model.Courses[i].Text
+                }
+            </div>
+
             <div class="form-group">
                 <input type="submit" value="Save" class="btn btn-primary" />
             </div>

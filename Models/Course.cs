@@ -13,6 +13,6 @@ namespace LearningDotNetCoreFromScratch.Models
         public string Code { get; set; }
 
         //Navigation Property
-        public ICollection<StudentCourse> Enrollment { get; set; }
+        public ICollection<StudentCourse> StudentCourse { get; set; }
     }
 }
