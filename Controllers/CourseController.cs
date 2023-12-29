@@ -22,9 +22,27 @@ namespace LearningDotNetCoreFromScratch.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpGet]
-        public IActionResult Index()
+        public IActionResult Index(string sortOrder)
         {
+            ViewData["TitleSort"] = string.IsNullOrEmpty(sortOrder) ? "title_desc" : "";
+            ViewData["CodeSort"] = string.IsNullOrEmpty(sortOrder) ? "Code_desc" : "";
+
             var courses = _context.Courses.ToList();
+            switch (sortOrder)
+            {
+                case "title_desc":
+                    courses = courses.OrderByDescending(s=>s.Title).ToList();
+                    break;
+
+                case "Code_desc":
+                    courses = courses.OrderByDescending(s => s.Code).ToList();
+                    break;
+
+                default:
+                    courses = courses.OrderBy(s => s.Title).ToList();
+                    break;
+            }
+            //var courses = _context.Courses.ToList();
             return View(courses);
         }
 

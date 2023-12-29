@@ -2,6 +2,7 @@ using LearningDotNetCoreFromScratch.Data;
 using LearningDotNetCoreFromScratch.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,7 +22,7 @@ namespace LearningDotNetCoreFromScratch
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDefaultIdentity<ApplicationUser>().AddEntityFrameworkStores<DataContext>();
+            services.AddDefaultIdentity<ApplicationUser>().AddRoles<IdentityRole>().AddEntityFrameworkStores<DataContext>();
             services.AddControllersWithViews();
             services.AddDbContext<DataContext>(options => options.UseSqlServer(Configuration.GetConnectionString("myConn")));
         }
@@ -43,7 +44,7 @@ namespace LearningDotNetCoreFromScratch
             app.UseStaticFiles();
 
             app.UseRouting();
-
+            app.UseAuthentication();
             app.UseAuthorization();
             
 

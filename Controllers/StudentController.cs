@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace LearningDotNetCoreFromScratch.Controllers
 {
-    [Authorize(Roles="Student")]
+    [Authorize(Roles= "Student, Admin, Administrator")]
     public class StudentController : Controller
     {
         private readonly DataContext _context;
@@ -22,6 +22,7 @@ namespace LearningDotNetCoreFromScratch.Controllers
             _context = context;
         }
 
+        [Authorize(Roles ="Administrator")]
         // GET: Student
         public async Task<IActionResult> Index()
         {

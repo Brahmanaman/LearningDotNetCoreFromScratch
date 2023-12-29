@@ -1,10 +1,12 @@
 ﻿using LearningDotNetCoreFromScratch.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LearningDotNetCoreFromScratch.ViewModel;
 
 namespace LearningDotNetCoreFromScratch.Data
 {
@@ -24,11 +26,17 @@ namespace LearningDotNetCoreFromScratch.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            base.OnModelCreating(modelBuilder);
             modelBuilder.Entity<Student>().ToTable("Student_Table");
             modelBuilder.Entity<Course>().ToTable("Course_Table");
             modelBuilder.Entity<StudentCourse>().ToTable("StudentCourse_Table");
+            modelBuilder.Ignore<IdentityUserLogin<string>>();
         }
- 
+
+        //if we have created the table and updated the database, but now i want to change the table name
+        //we have OnModelCreated Method
+
+        public DbSet<LearningDotNetCoreFromScratch.ViewModel.RoleStore> RoleStore { get; set; }
 
     }
 }
